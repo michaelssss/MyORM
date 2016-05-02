@@ -14,14 +14,31 @@ public class NativeJDBC {
     public NativeJDBC() throws SQLException, IOException {
         try (Connection connection = getConnection()) {
             Statement stat = connection.createStatement();
-            for(int i = 0 ;i<100;i++){
-                stat.executeUpdate("INSERT INTO HelloJDBC VALUES ('Hello World By JDBC')");
+
+//            int a = 100;
+//            while (a-- != 0) {
+//                String sql = "INSERT INTO MyORM VALUES (%s,'ABCX%s')";
+//                sql = String.format(sql, String.valueOf(a), String.valueOf(a));
+//                stat.execute(sql);
+//            }
+            String sql = String.format("SELECT * FROM MyORM WHERE %s", new Object2PrepareSQLCondition(MyObject.class));
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            System.out.println(sql);
+            preparedStatement.setString(1, "1");
+            preparedStatement.setString(2, "ABCX1");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                System.out.println(resultSet.getString(1) + " " + resultSet.getString(2));
             }
-            try (ResultSet resultSet = stat.executeQuery("SELECT * FROM HelloJDBC")) {
-                while (resultSet.next()) {
-                    System.out.println(resultSet.getString(1));
-                }
-            }
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            new NativeJDBC();
+        } catch (Exception e) {
+            System.out.print("Woops Something Wrong " + e);
+
         }
     }
 
@@ -39,14 +56,5 @@ public class NativeJDBC {
         String password = properties.getProperty("jdbc.password");
 
         return DriverManager.getConnection(url, username, password);
-    }
-
-    public static void main(String[] args) {
-        try {
-            new NativeJDBC();
-        } catch (Exception e) {
-            System.out.print("Woops Something Wrong " + e);
-
-        }
     }
 }
